@@ -86,7 +86,7 @@ static const osThreadAttr_t thread_attributes = {
  ******************************************************/
 #define SCAN_RESULT_BUFFER_SIZE (1200)
 #define SCAN_INTERVAL_MS (1000)
-#define SCAN_TIMEOUT_MS 5000
+#define SCAN_TIMEOUT_MS 10000
 
 #ifdef SLI_SI91X_ENABLE_IPV6
 #define MQTT_BROKER_IP "2401:4901:1290:10de::1000"
@@ -99,9 +99,6 @@ static const osThreadAttr_t thread_attributes = {
 #define CLIENT_PORT 1
 
 #define CLIENT_ID "WISECONNECT-SDK-MQTT-CLIENT-ID"
-
-#define TOPIC_TO_BE_SUBSCRIBED "silabs\0"
-#define QOS_OF_SUBSCRIPTION    SL_MQTT_QOS_LEVEL_1
 
 #define PUBLISH_TOPIC          "silabs"
 #define QOS_OF_PUBLISH_MESSAGE 0
@@ -272,7 +269,8 @@ static sl_status_t wlan_app_scan_callback_handler(sl_wifi_event_t event,
     buffer_length -= index;
 
     // Iterate through scan results and format them as JSON
-    for (uint32_t a = 0; a < scan_result->scan_count && buffer_length < 102; a++) {
+    // Note that one wifi object takes up 102 bytes maximum
+    for (uint32_t a = 0; a < scan_result->scan_count && buffer_length >= 102; a++) {
       // TODO: Add char limit dependent on SCAN_RESULT_BUFFER_SIZE
       bssid = (uint8_t *)&scan_result->scan_info[a].bssid;
       index = snprintf(scan_result_buffer,
@@ -342,7 +340,11 @@ static int deinit_net(sl_net_interface_t *net_interface)
   return 0;
 }
 
-int perform_wifi_scan(char *scan_result_buffer)
+/******************************************************
+ *                    Wi-Fi Scan Functions
+ ******************************************************/
+
+static void perform_wifi_scan(char *scan_result_buffer)
 {
   scan_complete = 0;
   scan_result_buffer[0] = '\0';
@@ -361,27 +363,20 @@ int perform_wifi_scan(char *scan_result_buffer)
 
   if (status != RSI_SUCCESS) {
     printf("WLAN Scan failed %lx. Please make sure the latest connectivity firmware is used.\r\n", status);
-    return -1;
   }
-
-  return 0;
+  printf("Scan: %s\r\n", scan_result_buffer);
 }
 
-void get_rss_scan(char *buf)
+static void get_rss_scan(char *buf)
 {
   sl_net_interface_t net_interface            = SL_NET_WIFI_AP_INTERFACE;
   sl_net_profile_id_t profile                 = SL_NET_DEFAULT_WIFI_AP_PROFILE_ID;
   const sl_wifi_device_configuration_t config = ap_config;
 
-  if (init_up_net(&net_interface, &profile, &config)) {
-    return;
+  if (init_up_net(&net_interface, &profile, &config) == 0) {
+    perform_wifi_scan(buf);
+    deinit_net(&net_interface);
   }
-  if (perform_wifi_scan(buf)) {
-      printf("Wi-Fi scan failed\r\n");
-  }
-  deinit_net(&net_interface);
-
-  printf("Wi-Fi client interface initialized\r\n");
 }
 
 /******************************************************
@@ -570,10 +565,10 @@ static void application_start(void *argument)
   printf("\r\nCombain demo started.\r\n");
 
   for (int i = 0; i < 2; i++) {
-    send_mqtt_msg(scan_buf);
-    osDelay(SCAN_INTERVAL_MS);
     get_rss_scan(scan_buf);
     printf("Scan: %s\r\n", scan_buf);
+    send_mqtt_msg(scan_buf);
+    osDelay(SCAN_INTERVAL_MS);
   }
 
   printf("Combain demo done.\r\n");
