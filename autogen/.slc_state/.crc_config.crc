@@ -1,0 +1,13 @@
+#CRC Codes for initially generated config files -- do not modify!
+FreeRTOSConfig.h=-1771758151
+RTE_Device_917.h=-1160341329
+emlib_core_debug_config.h=-212744839
+pin_config.h=-1315202306
+sl_board_configuration.h=-1419083843
+sl_board_control.h=-1067659825
+sl_core_config.h=-119586893
+sl_net_default_values.h=-2060976431
+sl_si91x_dma_config.h=-1624331129
+sl_si91x_external_oscillator.h=-1680319300
+sl_si91x_stack_size_config.h=1151736032
+sl_wifi_region_db_config.h=859220049

@@ -1,0 +1,68 @@
+# Silicon Labs Project Configuration Tools: slcp, v0, Component selection file.
+project_name: wifi_mod
+label: wifi_mod
+description: |
+  Start Wi-Fi provisioning via Access Point, displaying scan results on an HTTP server, and connecting to a third-party Access Point using the STA instance.
+category: Example|Wi-Fi
+filter:
+- name: Project Difficulty
+  value: [Beginner]
+- name: Wireless Technology
+  value: [Wi-Fi]
+package: wifi
+quality: production
+readme:
+- {path: readme.md}
+- {path: readme.md}
+source:
+- {path: app.c}
+- {path: main.c}
+include:
+- path: .
+  file_list:
+  - {path: app.h}
+- path: resources
+  file_list:
+  - {path: wifi_provisioning.h}
+sdk: {id: simplicity_sdk, version: 2024.12.1}
+toolchain_settings:
+- {value: -Wall -Werror, option: gcc_compiler_option}
+component:
+- {from: wiseconnect3_sdk, id: SIWG917Y111MGABA}
+- {from: wiseconnect3_sdk, id: basic_network_config_manager}
+- {from: wiseconnect3_sdk, id: brd2708a}
+- {from: wiseconnect3_sdk, id: bsd_socket}
+- {from: wiseconnect3_sdk, id: json_parser}
+- {from: wiseconnect3_sdk, id: mqtt}
+- {from: wiseconnect3_sdk, id: network_manager}
+- {from: wiseconnect3_sdk, id: si91x_memory_default_config}
+- {from: wiseconnect3_sdk, id: sl_si91x_asynchronous_socket}
+- {from: wiseconnect3_sdk, id: sl_si91x_internal_stack}
+- {from: wiseconnect3_sdk, id: sl_si91x_mem_pool_buffers_with_quota}
+- {from: wiseconnect3_sdk, id: sl_si91x_wireless}
+- {from: wiseconnect3_sdk, id: syscalls}
+- {from: wiseconnect3_sdk, id: wifi}
+- {from: wiseconnect3_sdk, id: wifi_resources}
+- {id: freertos}
+- {id: freertos_heap_4}
+- {id: sl_system}
+- {id: slist}
+other_file:
+- {path: resources/readme/connected-prints.png}
+- {path: resources/readme/connecting-to-a-network-connections.png}
+- {path: resources/readme/provisioning-webpage.png}
+- {path: resources/readme/scan.png}
+- {path: resources/readme/selecting-a-network.png}
+- {path: resources/readme/setup.png}
+define:
+- {name: SL_SI91X_PRINT_DBG_LOG}
+configuration:
+- {name: SL_BOARD_ENABLE_VCOM, value: '1'}
+ui_hints:
+  highlight:
+  - {path: readme.md, focus: true}
+sdk_extension:
+- {id: wiseconnect3_sdk, version: 3.4.1}
+post_build:
+- {path: wifi_mod.slpb}
+
