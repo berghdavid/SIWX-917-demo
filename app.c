@@ -100,7 +100,8 @@ static const osThreadAttr_t thread_attributes = {
 
 #define CLIENT_ID "WISECONNECT-SDK-MQTT-CLIENT-ID"
 
-#define PUBLISH_TOPIC          "silabs"
+#define SERVICE_TOKEN          "test"
+#define PUBLISH_TOPIC          "tlc/v2/raw-data/service/%s/device/%s"
 #define QOS_OF_PUBLISH_MESSAGE 0
 
 #define IS_DUPLICATE_MESSAGE 0
@@ -123,6 +124,8 @@ static const osThreadAttr_t thread_attributes = {
 #define USERNAME "silabs"
 #define PASSWORD "password"
 
+unsigned int req_nbr = 0;
+char device_id[18];
 sl_mqtt_client_t client = { 0 };
 sl_mqtt_client_credentials_t *client_credentails = NULL;
 uint8_t is_execution_completed = 0;
@@ -241,8 +244,52 @@ void sleep()
     #endif
   }
 }
+
+static int init_up_net(sl_net_interface_t *net_interface,
+                    sl_net_profile_id_t *profile,
+                    const sl_wifi_device_configuration_t *config)
+{
+  sl_status_t status = sl_net_init(*net_interface, (const void *)config, NULL, NULL);
+  if (status == SL_STATUS_ALREADY_INITIALIZED) {
+    printf("Reusing previous Wi-Fi interface. Wi-Fi interface up\r\n");
+    return 0;
+  } else if (status != SL_STATUS_OK) {
+    printf("Failed to init Wi-Fi interface: 0x%lx\r\n", status);
+    return -1;
+  }
+  printf("Wi-Fi interface initialized\r\n");
+
+  status = sl_net_up(*net_interface, *profile);
+  if (status != SL_STATUS_OK) {
+    printf("Failed to bring Wi-Fi interface up: 0x%lx\r\n", status);
+    return -1;
+  }
+  printf("Wi-Fi interface up\r\n");
+  return 0;
+}
+
+static int deinit_net(sl_net_interface_t *net_interface)
+{
+  sl_status_t status;
+  status = sl_net_down(*net_interface);
+  if (status != SL_STATUS_OK) {
+    printf("Network down failed: 0x%lx\r\n", status);
+    return -1;
+  }
+
+  // FIXME: AP network interface stuck on deinitialization.
+  printf("Attempting network deinit...\r\n");
+  status = sl_net_deinit(*net_interface);
+  if (status != SL_STATUS_OK) {
+    printf("Network deinit failed: 0x%lx\r\n", status);
+    return -1;
+  }
+  printf("Network deinitialized\r\n");
+  return 0;
+}
+
 /******************************************************
- *               RSS Scan Functions
+ *                    Wi-Fi Scan Functions
  ******************************************************/
 
 static sl_status_t wlan_app_scan_callback_handler(sl_wifi_event_t event,
@@ -263,27 +310,29 @@ static sl_status_t wlan_app_scan_callback_handler(sl_wifi_event_t event,
 
   if (scan_result->scan_count) {
     uint32_t buffer_length = SCAN_RESULT_BUFFER_SIZE - 1;
-    int32_t index =
-      snprintf(scan_result_buffer, buffer_length, "{\"indoor\": 1, \"wifiAccessPoints\": [");
+    int32_t index = snprintf(
+      scan_result_buffer,
+      buffer_length,
+      "{\"servicetoken\": \"%s\", \"id\": \"%s\", \"nr\": %u, \"wifiAccessPoints\": [",
+      SERVICE_TOKEN,
+      device_id,
+      req_nbr++
+    );
     scan_result_buffer += index;
     buffer_length -= index;
 
     // Iterate through scan results and format them as JSON
-    // Note that one wifi object takes up 102 bytes maximum
-    for (uint32_t a = 0; a < scan_result->scan_count && buffer_length >= 102; a++) {
-      // TODO: Add char limit dependent on SCAN_RESULT_BUFFER_SIZE
+    // Note that one wifi object can maximally use 104 bytes
+    for (uint32_t a = 0; a < scan_result->scan_count && buffer_length > 104; a++) {
       bssid = (uint8_t *)&scan_result->scan_info[a].bssid;
-      index = snprintf(scan_result_buffer,
-                       buffer_length,
-                       "{\"macAdress\": \"%02x:%02x:%02x:%02x:%02x:%02x\", \"ssid\": \"%s\", \"signalStrength\": -%u}",
-                       bssid[0],
-                       bssid[1],
-                       bssid[2],
-                       bssid[3],
-                       bssid[4],
-                       bssid[5],
-                       scan_result->scan_info[a].ssid,
-                       scan_result->scan_info[a].rssi_val);
+      index = snprintf(
+        scan_result_buffer,
+        buffer_length,
+        "{\"macAdress\": \"%02x:%02x:%02x:%02x:%02x:%02x\", \"ssid\": \"%s\", \"signalStrength\": -%u}",
+        bssid[0], bssid[1], bssid[2], bssid[3], bssid[4], bssid[5],
+        scan_result->scan_info[a].ssid,
+        scan_result->scan_info[a].rssi_val
+      );
       scan_result_buffer += index;
       buffer_length -= index;
       if (a < scan_result->scan_count - 1) {
@@ -301,57 +350,38 @@ static sl_status_t wlan_app_scan_callback_handler(sl_wifi_event_t event,
   return SL_STATUS_OK;
 }
 
-static int init_up_net(sl_net_interface_t *net_interface,
-                    sl_net_profile_id_t *profile,
-                    const sl_wifi_device_configuration_t *config)
+static void read_mac_address(sl_wifi_interface_t *wifi_interface)
 {
-  sl_status_t status = sl_net_init(*net_interface, (const void *)config, NULL, NULL);
-  if (status != SL_STATUS_OK && status != SL_STATUS_ALREADY_INITIALIZED) {
-    printf("Failed to init Wi-Fi interface: 0x%lx\r\n", status);
-    return -1;
-  }
-  printf("Wi-Fi interface initialized\r\n");
+  sl_mac_address_t mac;
+  char *pos = &device_id[0];
+  int n;
 
-  if (status == SL_STATUS_ALREADY_INITIALIZED) {
-    printf("Wi-Fi interface up\r\n");
-    return 0;
-  }
-  status = sl_net_up(*net_interface, *profile);
+  sl_status_t status = sl_wifi_get_mac_address(*wifi_interface, &mac);
   if (status != SL_STATUS_OK) {
-    printf("Failed to bring Wi-Fi interface up: 0x%lx\r\n", status);
-    return -1;
+    printf("Failed to get mac address: 0x%lx\r\n", status);
+    return;
   }
-  printf("Wi-Fi interface up\r\n");
-  return 0;
-}
-
-static int deinit_net(sl_net_interface_t *net_interface)
-{
-  // FIXME: AP network interface stuck on deinitialization.
-  printf("Attempting network deinit...\r\n");
-  sl_status_t status = sl_net_deinit(*net_interface);
-  printf("Network deinit complete!\r\n");
-
-  if (status != SL_STATUS_OK) {
-    printf("Network deinit failed: 0x%lx\r\n", status);
-    return -1;
+  for (int i = 0; i < 6; i++) {
+    if (i > 0) {
+        n = sprintf(pos, ":");
+        pos += n;
+    }
+    n = sprintf(pos, "%02X", mac.octet[i]);
+    pos += n;
   }
-  printf("Network deinitialized\r\n");
-  return 0;
 }
-
-/******************************************************
- *                    Wi-Fi Scan Functions
- ******************************************************/
 
 static void perform_wifi_scan(char *scan_result_buffer)
 {
+  sl_wifi_interface_t wifi_interface = SL_WIFI_AP_INTERFACE;
   scan_complete = 0;
   scan_result_buffer[0] = '\0';
+  if (device_id[0] == '\0') {
+    read_mac_address(&wifi_interface);
+  }
 
   sl_wifi_set_scan_callback(wlan_app_scan_callback_handler, (void *)scan_result_buffer);
-  sl_status_t status = sl_wifi_start_scan(SL_WIFI_AP_INTERFACE, NULL, &default_wifi_scan_configuration);
-
+  sl_status_t status = sl_wifi_start_scan(wifi_interface, NULL, &default_wifi_scan_configuration);
   if (SL_STATUS_IN_PROGRESS == status) {
     // Wait for scan completion or timeout
     uint32_t end = osKernelGetTickCount() + SCAN_TIMEOUT_MS;
@@ -560,13 +590,12 @@ void send_mqtt_msg(const char *msg)
 static void application_start(void *argument)
 {
   UNUSED_PARAMETER(argument);
-  char scan_buf[SCAN_RESULT_BUFFER_SIZE] = "Initial message";
+  char scan_buf[SCAN_RESULT_BUFFER_SIZE] = "Missing scan";
 
   printf("\r\nCombain demo started.\r\n");
 
   for (int i = 0; i < 2; i++) {
     get_rss_scan(scan_buf);
-    printf("Scan: %s\r\n", scan_buf);
     send_mqtt_msg(scan_buf);
     osDelay(SCAN_INTERVAL_MS);
   }
