@@ -126,6 +126,7 @@ static const osThreadAttr_t thread_attributes = {
 
 unsigned int req_nbr = 0;
 char device_id[18];
+char mqtt_topic[200];
 sl_mqtt_client_t client = { 0 };
 sl_mqtt_client_credentials_t *client_credentails = NULL;
 uint8_t is_execution_completed = 0;
@@ -214,8 +215,8 @@ sl_mqtt_client_message_t message_to_be_published = {
   .qos_level            = QOS_OF_PUBLISH_MESSAGE,
   .is_retained          = IS_MESSAGE_RETAINED,
   .is_duplicate_message = IS_DUPLICATE_MESSAGE,
-  .topic                = (uint8_t *)PUBLISH_TOPIC,
-  .topic_length         = strlen(PUBLISH_TOPIC),
+  .topic                = NULL,
+  .topic_length         = 0,
   .content              = NULL,
   .content_length       = 0,
 };
@@ -313,8 +314,7 @@ static sl_status_t wlan_app_scan_callback_handler(sl_wifi_event_t event,
     int32_t index = snprintf(
       scan_result_buffer,
       buffer_length,
-      "{\"servicetoken\": \"%s\", \"id\": \"%s\", \"nr\": %u, \"wifiAccessPoints\": [",
-      SERVICE_TOKEN,
+      "{\"id\": \"%s\", \"nr\": %u, \"wifiAccessPoints\": [",
       device_id,
       req_nbr++
     );
@@ -350,7 +350,7 @@ static sl_status_t wlan_app_scan_callback_handler(sl_wifi_event_t event,
   return SL_STATUS_OK;
 }
 
-static void read_mac_address(sl_wifi_interface_t *wifi_interface)
+static void set_mac_address(sl_wifi_interface_t *wifi_interface)
 {
   sl_mac_address_t mac;
   char *pos = &device_id[0];
@@ -369,6 +369,11 @@ static void read_mac_address(sl_wifi_interface_t *wifi_interface)
     n = sprintf(pos, "%02X", mac.octet[i]);
     pos += n;
   }
+
+  if (mqtt_topic[0] == '\0') {
+    snprintf(mqtt_topic, sizeof(mqtt_topic), PUBLISH_TOPIC, SERVICE_TOKEN, device_id);
+    printf("MQTT publish topic: %s\r\n", mqtt_topic);
+  }
 }
 
 static void perform_wifi_scan(char *scan_result_buffer)
@@ -377,7 +382,7 @@ static void perform_wifi_scan(char *scan_result_buffer)
   scan_complete = 0;
   scan_result_buffer[0] = '\0';
   if (device_id[0] == '\0') {
-    read_mac_address(&wifi_interface);
+    set_mac_address(&wifi_interface);
   }
 
   sl_wifi_set_scan_callback(wlan_app_scan_callback_handler, (void *)scan_result_buffer);
@@ -574,6 +579,8 @@ void send_mqtt_msg(const char *msg)
   is_execution_completed = 0;
   message_to_be_published.content = (uint8_t *)msg;
   message_to_be_published.content_length = strlen(msg);
+  message_to_be_published.topic = (uint8_t *)mqtt_topic;
+  message_to_be_published.topic_length = strlen(mqtt_topic);
 
   init_up_net(&net_interface, &profile, &config);
   mqtt_example();
@@ -581,6 +588,8 @@ void send_mqtt_msg(const char *msg)
 
   message_to_be_published.content = NULL;
   message_to_be_published.content_length = 0;
+  message_to_be_published.topic = NULL;
+  message_to_be_published.topic_length = 0;
 }
 
 /******************************************************
@@ -590,14 +599,15 @@ void send_mqtt_msg(const char *msg)
 static void application_start(void *argument)
 {
   UNUSED_PARAMETER(argument);
-  char scan_buf[SCAN_RESULT_BUFFER_SIZE] = "Missing scan";
+  char scan_buf[SCAN_RESULT_BUFFER_SIZE];
 
   printf("\r\nCombain demo started.\r\n");
 
-  for (int i = 0; i < 2; i++) {
+  while (1) {
     get_rss_scan(scan_buf);
     send_mqtt_msg(scan_buf);
     osDelay(SCAN_INTERVAL_MS);
+    memset(scan_buf, 0, sizeof(scan_buf));
   }
 
   printf("Combain demo done.\r\n");
