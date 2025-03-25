@@ -328,7 +328,7 @@ static sl_status_t wlan_app_scan_callback_handler(sl_wifi_event_t event,
       index = snprintf(
         scan_result_buffer,
         buffer_length,
-        "{\"macAdress\": \"%02x:%02x:%02x:%02x:%02x:%02x\", \"ssid\": \"%s\", \"signalStrength\": -%u}",
+        "{\"macAddress\": \"%02x:%02x:%02x:%02x:%02x:%02x\", \"ssid\": \"%s\", \"signalStrength\": -%u}",
         bssid[0], bssid[1], bssid[2], bssid[3], bssid[4], bssid[5],
         scan_result->scan_info[a].ssid,
         scan_result->scan_info[a].rssi_val
