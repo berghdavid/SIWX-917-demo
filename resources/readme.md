@@ -45,7 +45,7 @@ All device activities can be observed on the serial terminal prints. You may use
 
 ### Setup Diagram
 
-![Figure: Setup Diagram for SiWx91x module](resources/readme/setup.png)
+![Figure: Setup Diagram for SiWx91x module](readme/setup.png)
 
 ## Getting Started
 
@@ -97,23 +97,23 @@ Refer to the instructions [here](https://docs.silabs.com/wiseconnect/latest/wise
 
 ### Connecting to a Wi-Fi Network
 
-![Connecting to a Network Connections](resources/readme/connecting-to-a-network-connections.png)
+![Connecting to a Network Connections](readme/connecting-to-a-network-connections.png)
 
 **Step 1** : Make sure that your Laptop/mobile device is connected to the SiWx91x module's AP network.
 
 **Step 2** : Enter `192.168.10.10` on your browser to open the provisioning webpage.
 
-![Provisioning Webpage](resources/readme/provisioning-webpage.png)
+![Provisioning Webpage](readme/provisioning-webpage.png)
 
 **Step 3** : Click `Scan` to scan for available networks. 
 
-![Scan](resources/readme/scan.png)
+![Scan](readme/scan.png)
 
 **Step 4** : Select your desired network, enter password, and then click `Connect`.
 
-![Selecting a Network](resources/readme/selecting-a-network.png)
+![Selecting a Network](readme/selecting-a-network.png)
 
 **Step 5** : The SiWx91x module switches to Wi-Fi Station mode and connects to the selected Wi-Fi network. 
 
-![Connected Prints](resources/readme/connected-prints.png)
+![Connected Prints](readme/connected-prints.png)
 
