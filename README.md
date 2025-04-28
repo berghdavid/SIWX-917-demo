@@ -1,6 +1,9 @@
 # SIWX-917 Demo
 Code and instructions on how to run the SIWX-917 positioning demo.
 
+Limitations:
+- The device can currently only connect to a pre-defined WiFi.
+- Currently sends a request every ~10 seconds.
 
 ## Installation
 1) Install [Simplicity Studio](https://www.silabs.com/developer-tools/simplicity-studio).
