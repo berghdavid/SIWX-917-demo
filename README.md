@@ -31,6 +31,6 @@ Set the following variables to allow an MQTT connection:
 ## Run
 1) Open Simplicity Studio and connect your SIWX-917 device via USB. A device should now appear below the "Debug Adapters" tab.
 2) Right-click the device and select "Connect".
-3) To view the output of the program we are flashing to the device, right-click the device and press "Launch Console...". Make sure to open the "Serial 1" tab.
-4) Right click the project directory (wifi_mod for example) in Simplicity Studio and select "Build". A directory named "Binaries" should now appear.
-5) Right-click the fitting binary in the binaries directory (use "xxx.s37" if unsure) and select "Flash to Device..."->"Program". The output of running the binary on your device should now appear in the console tab.
+3) To view the output of the program we are flashing to the device, right-click the device and press "Launch Console...". Make sure to open the "Serial 1" tab in the console window.
+4) Right click the project directory (wifi_mod for example) in Simplicity Studio and select "Build". A directory named "Binaries" should now exist.
+5) Right-click the fitting binary in the Binaries directory ("xxx.s37" if unsure) and select "Flash to Device..."->"Program". The output of running the binary on your device should now appear in the console tab.
