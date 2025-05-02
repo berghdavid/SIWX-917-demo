@@ -3,7 +3,7 @@
   "specVersion" : "1.6",
   "version" : 1,
   "metadata" : {
-    "timestamp" : "2025-03-17T15:08:56.694418400Z",
+    "timestamp" : "2025-03-24T14:14:18.440303700Z",
     "authors" : [ {
       "name" : "Silicon Laboratories, Inc."
     } ],
@@ -41,6 +41,15 @@
       "type" : "library",
       "bom-ref" : "wiseconnect3_sdk:3.4.1:brd2708a",
       "name" : "BRD2708A",
+      "version" : "3.4.1",
+      "licenses" : [ {
+        "expression" : "Zlib"
+      } ]
+    }, {
+      "scope" : "required",
+      "type" : "library",
+      "bom-ref" : "wiseconnect3_sdk:3.4.1:bsd_socket",
+      "name" : "BSD Socket",
       "version" : "3.4.1",
       "licenses" : [ {
         "expression" : "Zlib"
@@ -97,6 +106,15 @@
       "version" : "3.4.1",
       "licenses" : [ {
         "expression" : "Zlib"
+      } ]
+    }, {
+      "scope" : "required",
+      "type" : "library",
+      "bom-ref" : "wiseconnect3_sdk:3.4.1:sl_si91x_asynchronous_socket",
+      "name" : "Si91x Asynchronous Socket",
+      "version" : "3.4.1",
+      "licenses" : [ {
+        "expression" : "MSLA"
       } ]
     }, {
       "scope" : "required",
@@ -745,24 +763,6 @@
       "licenses" : [ {
         "expression" : "Zlib"
       } ]
-    }, {
-      "scope" : "required",
-      "type" : "library",
-      "bom-ref" : "wiseconnect3_sdk:3.4.1:sl_si91x_asynchronous_socket",
-      "name" : "Si91x Asynchronous Socket",
-      "version" : "3.4.1",
-      "licenses" : [ {
-        "expression" : "MSLA"
-      } ]
-    }, {
-      "scope" : "required",
-      "type" : "library",
-      "bom-ref" : "wiseconnect3_sdk:3.4.1:bsd_socket",
-      "name" : "BSD Socket",
-      "version" : "3.4.1",
-      "licenses" : [ {
-        "expression" : "Zlib"
-      } ]
     } ]
   }, {
     "scope" : "required",
@@ -1170,6 +1170,18 @@
       "type" : "library",
       "bom-ref" : "simplicity_sdk:2024.12.1:sl_common",
       "name" : "Common Functions",
+      "version" : "2024.12.1",
+      "supplier" : {
+        "name" : "Silicon Laboratories, Inc."
+      },
+      "licenses" : [ {
+        "expression" : "Zlib"
+      } ]
+    }, {
+      "scope" : "required",
+      "type" : "library",
+      "bom-ref" : "simplicity_sdk:2024.12.1:ecode",
+      "name" : "EMDRV Common Headers",
       "version" : "2024.12.1",
       "supplier" : {
         "name" : "Silicon Laboratories, Inc."

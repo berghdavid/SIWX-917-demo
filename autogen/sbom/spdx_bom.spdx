@@ -13,7 +13,7 @@ DocumentNamespace: https://silabs.com
 
 ## Creation Information
 Creator: Organization: Silicon Laboratories, Inc.
-Created: 2025-03-17T15:08:56.694418400Z
+Created: 2025-03-24T14:14:18.440303700Z
 ## Relationships
 Relationship: SPDXRef-DOCUMENT DESCRIBES SPDXRef-wiseconnect3_sdk-3.4.1
 Relationship: SPDXRef-DOCUMENT DESCRIBES SPDXRef-simplicity_sdk-2024.12.1
@@ -29,10 +29,12 @@ PackageSupplier: Organization: NOASSERTION
 Relationship: SPDXRef-wiseconnect3_sdk-3.4.1 CONTAINS SPDXRef-wiseconnect3_sdk-3.4.1-SIWG917Y111MGABA
 Relationship: SPDXRef-wiseconnect3_sdk-3.4.1 CONTAINS SPDXRef-wiseconnect3_sdk-3.4.1-basic_network_config_manager
 Relationship: SPDXRef-wiseconnect3_sdk-3.4.1 CONTAINS SPDXRef-wiseconnect3_sdk-3.4.1-brd2708a
+Relationship: SPDXRef-wiseconnect3_sdk-3.4.1 CONTAINS SPDXRef-wiseconnect3_sdk-3.4.1-bsd_socket
 Relationship: SPDXRef-wiseconnect3_sdk-3.4.1 CONTAINS SPDXRef-wiseconnect3_sdk-3.4.1-json_parser
 Relationship: SPDXRef-wiseconnect3_sdk-3.4.1 CONTAINS SPDXRef-wiseconnect3_sdk-3.4.1-mqtt
 Relationship: SPDXRef-wiseconnect3_sdk-3.4.1 CONTAINS SPDXRef-wiseconnect3_sdk-3.4.1-network_manager
 Relationship: SPDXRef-wiseconnect3_sdk-3.4.1 CONTAINS SPDXRef-wiseconnect3_sdk-3.4.1-si91x_memory_default_config
+Relationship: SPDXRef-wiseconnect3_sdk-3.4.1 CONTAINS SPDXRef-wiseconnect3_sdk-3.4.1-sl_si91x_asynchronous_socket
 Relationship: SPDXRef-wiseconnect3_sdk-3.4.1 CONTAINS SPDXRef-wiseconnect3_sdk-3.4.1-sl_si91x_internal_stack
 Relationship: SPDXRef-wiseconnect3_sdk-3.4.1 CONTAINS SPDXRef-wiseconnect3_sdk-3.4.1-sl_si91x_mem_pool_buffers_with_quota
 Relationship: SPDXRef-wiseconnect3_sdk-3.4.1 CONTAINS SPDXRef-wiseconnect3_sdk-3.4.1-sl_si91x_wireless
@@ -103,8 +105,6 @@ Relationship: SPDXRef-wiseconnect3_sdk-3.4.1 CONTAINS SPDXRef-wiseconnect3_sdk-3
 Relationship: SPDXRef-wiseconnect3_sdk-3.4.1 CONTAINS SPDXRef-wiseconnect3_sdk-3.4.1-cmsis_usart_driver
 Relationship: SPDXRef-wiseconnect3_sdk-3.4.1 CONTAINS SPDXRef-wiseconnect3_sdk-3.4.1-romdriver_ulpss
 Relationship: SPDXRef-wiseconnect3_sdk-3.4.1 CONTAINS SPDXRef-wiseconnect3_sdk-3.4.1-rsilib_crc
-Relationship: SPDXRef-wiseconnect3_sdk-3.4.1 CONTAINS SPDXRef-wiseconnect3_sdk-3.4.1-sl_si91x_asynchronous_socket
-Relationship: SPDXRef-wiseconnect3_sdk-3.4.1 CONTAINS SPDXRef-wiseconnect3_sdk-3.4.1-bsd_socket
 
 ## Package Information
 PackageName: SIWG917Y111MGABA
@@ -138,6 +138,17 @@ PackageSupplier: Organization: NOASSERTION
 PackageLicenseConcluded: Zlib
 ## Relationships
 Relationship: SPDXRef-wiseconnect3_sdk-3.4.1-brd2708a CONTAINED_BY SPDXRef-wiseconnect3_sdk-3.4.1
+
+## Package Information
+PackageName: BSD Socket
+SPDXID: SPDXRef-wiseconnect3_sdk-3.4.1-bsd_socket
+PackageVersion: 3.4.1
+PrimaryPackagePurpose: LIBRARY
+PackageDownloadLocation: NOASSERTION
+PackageSupplier: Organization: NOASSERTION
+PackageLicenseConcluded: Zlib
+## Relationships
+Relationship: SPDXRef-wiseconnect3_sdk-3.4.1-bsd_socket CONTAINED_BY SPDXRef-wiseconnect3_sdk-3.4.1
 
 ## Package Information
 PackageName: JSON Parser
@@ -196,6 +207,17 @@ PackageSupplier: Organization: NOASSERTION
 PackageLicenseConcluded: Zlib
 ## Relationships
 Relationship: SPDXRef-wiseconnect3_sdk-3.4.1-si91x_memory_default_config CONTAINED_BY SPDXRef-wiseconnect3_sdk-3.4.1
+
+## Package Information
+PackageName: Si91x Asynchronous Socket
+SPDXID: SPDXRef-wiseconnect3_sdk-3.4.1-sl_si91x_asynchronous_socket
+PackageVersion: 3.4.1
+PrimaryPackagePurpose: LIBRARY
+PackageDownloadLocation: NOASSERTION
+PackageSupplier: Organization: NOASSERTION
+PackageLicenseConcluded: MSLA
+## Relationships
+Relationship: SPDXRef-wiseconnect3_sdk-3.4.1-sl_si91x_asynchronous_socket CONTAINED_BY SPDXRef-wiseconnect3_sdk-3.4.1
 
 ## Package Information
 PackageName: Internal Network Stack
@@ -982,28 +1004,6 @@ PackageLicenseConcluded: Zlib
 Relationship: SPDXRef-wiseconnect3_sdk-3.4.1-rsilib_crc CONTAINED_BY SPDXRef-wiseconnect3_sdk-3.4.1
 
 ## Package Information
-PackageName: Si91x Asynchronous Socket
-SPDXID: SPDXRef-wiseconnect3_sdk-3.4.1-sl_si91x_asynchronous_socket
-PackageVersion: 3.4.1
-PrimaryPackagePurpose: LIBRARY
-PackageDownloadLocation: NOASSERTION
-PackageSupplier: Organization: NOASSERTION
-PackageLicenseConcluded: MSLA
-## Relationships
-Relationship: SPDXRef-wiseconnect3_sdk-3.4.1-sl_si91x_asynchronous_socket CONTAINED_BY SPDXRef-wiseconnect3_sdk-3.4.1
-
-## Package Information
-PackageName: BSD Socket
-SPDXID: SPDXRef-wiseconnect3_sdk-3.4.1-bsd_socket
-PackageVersion: 3.4.1
-PrimaryPackagePurpose: LIBRARY
-PackageDownloadLocation: NOASSERTION
-PackageSupplier: Organization: NOASSERTION
-PackageLicenseConcluded: Zlib
-## Relationships
-Relationship: SPDXRef-wiseconnect3_sdk-3.4.1-bsd_socket CONTAINED_BY SPDXRef-wiseconnect3_sdk-3.4.1
-
-## Package Information
 PackageName: Simplicity SDK Suite
 SPDXID: SPDXRef-simplicity_sdk-2024.12.1
 PackageVersion: 2024.12.1
@@ -1038,6 +1038,7 @@ Relationship: SPDXRef-simplicity_sdk-2024.12.1 CONTAINS SPDXRef-simplicity_sdk-2
 Relationship: SPDXRef-simplicity_sdk-2024.12.1 CONTAINS SPDXRef-simplicity_sdk-2024.12.1-emlib_core
 Relationship: SPDXRef-simplicity_sdk-2024.12.1 CONTAINS SPDXRef-simplicity_sdk-2024.12.1-sl_system_init
 Relationship: SPDXRef-simplicity_sdk-2024.12.1 CONTAINS SPDXRef-simplicity_sdk-2024.12.1-sl_common
+Relationship: SPDXRef-simplicity_sdk-2024.12.1 CONTAINS SPDXRef-simplicity_sdk-2024.12.1-ecode
 
 ## Package Information
 PackageName: FreeRTOS
@@ -1395,3 +1396,14 @@ PackageSupplier: Organization: Silicon Laboratories, Inc.
 PackageLicenseConcluded: Zlib
 ## Relationships
 Relationship: SPDXRef-simplicity_sdk-2024.12.1-sl_common CONTAINED_BY SPDXRef-simplicity_sdk-2024.12.1
+
+## Package Information
+PackageName: EMDRV Common Headers
+SPDXID: SPDXRef-simplicity_sdk-2024.12.1-ecode
+PackageVersion: 2024.12.1
+PrimaryPackagePurpose: LIBRARY
+PackageDownloadLocation: NOASSERTION
+PackageSupplier: Organization: Silicon Laboratories, Inc.
+PackageLicenseConcluded: Zlib
+## Relationships
+Relationship: SPDXRef-simplicity_sdk-2024.12.1-ecode CONTAINED_BY SPDXRef-simplicity_sdk-2024.12.1

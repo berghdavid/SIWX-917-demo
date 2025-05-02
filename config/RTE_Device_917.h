@@ -17,10 +17,10 @@
  *
  * 3. This notice may not be removed or altered from any source distribution.
  *
- * $Date:        1. October 2024
+ * $Date:        1. June 2024
  * $Revision:    V2.4.4
  *
- * Project:      RTE Device Configuration for SiWx917Y Module BRD2708A Explorer Kit
+ * Project:      RTE Device Configuration for Si91x 2.0 B0 BRD2605A
  * -------------------------------------------------------------------------- */
 
 //-------- <<< Use Configuration Wizard in Context Menu >>> --------------------
@@ -48,19 +48,31 @@
 #define RTE_BUTTON0_NUMBER 0
 #define RTE_BUTTON0_PIN    (2U)
 
-#define RTE_BUTTON1_PORT   HP
+#define RTE_BUTTON1_PORT   3
 #define RTE_BUTTON1_NUMBER 1
-#define RTE_BUTTON1_PIN    (11U)
-#define RTE_BUTTON1_PAD    6
+#define RTE_BUTTON1_PIN    (1U)
+#define RTE_BUTTON1_PAD    13
 
-#define RTE_LED0_PORT   HP
+// RGB LED Instance 0
 #define RTE_LED0_NUMBER 0
-#define RTE_LED0_PIN    (10U)
-#define RTE_LED0_PAD    5
 
-#define RTE_LED1_PORT   ULP
-#define RTE_LED1_NUMBER 1
-#define RTE_LED1_PIN    (2U)
+// Red LED
+#define RTE_LED0_LEDR_PORT   3
+#define RTE_LED0_LEDR_NUMBER RTE_LED0_NUMBER
+#define RTE_LED0_LEDR_PIN    2
+#define RTE_LED0_LEDR_PAD    14
+
+// Green LED
+#define RTE_LED0_LEDG_PORT   3
+#define RTE_LED0_LEDG_NUMBER RTE_LED0_NUMBER
+#define RTE_LED0_LEDG_PIN    3
+#define RTE_LED0_LEDG_PAD    15
+
+// Blue LED
+#define RTE_LED0_LEDB_PORT   HP
+#define RTE_LED0_LEDB_NUMBER RTE_LED0_NUMBER
+#define RTE_LED0_LEDB_PIN    15
+#define RTE_LED0_LEDB_PAD    8
 
 // <e> USART0  [Driver_USART0]
 // <i> Configuration settings for Driver_USART0 in component ::CMSIS Driver:USART
@@ -93,7 +105,7 @@
 //     <o> USART0_CLK <0=>P0_8  <1=>P0_25 <2=>P0_52 <3=>P0_64
 //     <i> CLK of USART0
 #ifndef USART0_CLK_LOC
-#define RTE_USART0_CLK_PORT_ID 1
+#define RTE_USART0_CLK_PORT_ID 0
 
 #if (RTE_USART0_CLK_PORT_ID == 0)
 #define RTE_USART0_CLK_PORT HP
@@ -601,7 +613,7 @@
 #define RTE_UART1_CHNL_UDMA_RX_CH 26
 
 /*UART1 PINS*/
-//     <o> UART1_TX <0=>P0_7 <1=>P0_30 <2=>P0_69 <3=>P0_73 <4=>P0_75 <5=>P0_34
+//     <o> UART1_TX <0=>P0_7 <1=>P0_30 <2=>P0_67 <3=>P0_69 <4=>P0_73 <5=>P0_75 <6=>P0_34
 //     <i> TX of UART1
 #ifndef UART1_TX_LOC
 #ifdef SLI_SI91X_MCU_CONFIG_RADIO_BOARD_BASE_VER
@@ -626,10 +638,15 @@
 #define RTE_UART1_TX_PAD  0 //no pad
 #elif (RTE_UART1_TX_PORT_ID == 2)
 #define RTE_UART1_TX_PORT HP
+#define RTE_UART1_TX_PIN  67
+#define RTE_UART1_TX_MUX  9
+#define RTE_UART1_TX_PAD  25
+#elif (RTE_UART1_TX_PORT_ID == 3)
+#define RTE_UART1_TX_PORT HP
 #define RTE_UART1_TX_PIN  73
 #define RTE_UART1_TX_MUX  6
 #define RTE_UART1_TX_PAD  31
-#elif (RTE_UART1_TX_PORT_ID == 3)
+#elif (RTE_UART1_TX_PORT_ID == 4)
 #define RTE_UART1_TX_PORT HP
 #define RTE_UART1_TX_PIN  75
 #define RTE_UART1_TX_MUX  9
@@ -668,7 +685,7 @@
 //Pintool data
 #endif
 
-//     <o> UART1_RX <0=>P0_6 <1=>P0_29 <2=>P0_66 <3=>P0_72
+//     <o> UART1_RX <0=>P0_6 <1=>P0_29 <2=>P0_66 <3=>P0_68 <4=>P0_72 <5=>P0_74  <6=>P0_33
 //     <i> RX of UART1
 #ifndef UART1_RX_LOC
 #define RTE_UART1_RX_PORT_ID 0
@@ -693,6 +710,11 @@
 #define RTE_UART1_RX_PIN  72
 #define RTE_UART1_RX_MUX  6
 #define RTE_UART1_RX_PAD  30
+#elif (RTE_UART1_RX_PORT_ID == 4)
+#define RTE_UART1_RX_PORT HP
+#define RTE_UART1_RX_PIN  74
+#define RTE_UART1_RX_MUX  9
+#define RTE_UART1_RX_PAD  32
 #else
 #error "Invalid UART1 RTE_UART1_RX_PIN Pin Configuration!"
 #endif
@@ -1423,7 +1445,7 @@
 
 // <o> SSI_SLAVE_CS Pin <0=>Not Used <1=>GPIO_9 <2=>GPIO_25 <3=>GPIO_46 <4=>GPIO_53
 #ifndef SSI_SLAVE_CS0_LOC
-#define RTE_SSI_SLAVE_CS_PORT_ID 2
+#define RTE_SSI_SLAVE_CS_PORT_ID 1
 
 #if (RTE_SSI_SLAVE_CS_PORT_ID == 0)
 #define RTE_SSI_SLAVE_CS 0
@@ -1496,8 +1518,8 @@
 #define RTE_SSI_ULP_MASTER 1
 
 // <e> Enable multiple CSN lines
-#define ULP_SSI_CS0 0
-#define ULP_SSI_CS1 1
+#define ULP_SSI_CS0 1
+#define ULP_SSI_CS1 0
 #define ULP_SSI_CS2 0
 
 // <o> SSI_ULP_MASTER_MISO Pin <0=>Not Used <1=>ULP_GPIO_2 <2=>ULP_GPIO_9
@@ -2240,9 +2262,13 @@
 //Pintool data
 #endif
 
-//   <o> I2C0_SCL Pin <0=>P0_6
+//   <o> I2C0_SCL Pin <0=>P0_6 <1=>P0_64 <2=>P0_67 <3=>P0_74 <4=>P0_31
 #ifndef I2C0_SDA_LOC
+#ifdef SLI_SI91X_MCU_CONFIG_RADIO_BOARD_BASE_VER
+#define RTE_I2C0_SDA_PORT_ID 2
+#else
 #define RTE_I2C0_SDA_PORT_ID 0
+#endif
 
 #if (RTE_I2C0_SDA_PORT_ID == 0)
 #define RTE_I2C0_SDA_PORT    0
@@ -2250,6 +2276,18 @@
 #define RTE_I2C0_SDA_MUX     4
 #define RTE_I2C0_SDA_PAD     1
 #define RTE_I2C0_SDA_I2C_REN 6
+#elif (RTE_I2C0_SDA_PORT_ID == 1)
+#define RTE_I2C0_SDA_PORT    0
+#define RTE_I2C0_SDA_PIN     67
+#define RTE_I2C0_SDA_MUX     4
+#define RTE_I2C0_SDA_PAD     25
+#define RTE_I2C0_SDA_I2C_REN 3
+#elif (RTE_I2C0_SDA_PORT_ID == 2)
+#define RTE_I2C0_SDA_PORT    0
+#define RTE_I2C0_SDA_PIN     74
+#define RTE_I2C0_SDA_MUX     4
+#define RTE_I2C0_SDA_PAD     32
+#define RTE_I2C0_SDA_I2C_REN 10
 #else
 #error "Invalid I2C0 RTE_I2C0_SDA Pin Configuration!"
 #endif
@@ -2377,7 +2415,7 @@
 //Pintool data
 #endif
 
-// <o> I2C1_SCL Pin <0=>P0_7 <1=>P0_30 <2=>P0_51 <3=>P0_55  <4=>P0_65 <5=>P0_71 <6=>P0_34
+// <o> I2C1_SCL Pin <0=>P0_7 <1=>P0_30 <2=>P0_51 <3=>P0_55  <4=>P0_65 <4=>P0_67 <4=>P0_71 <7=>P0_34
 #ifndef I2C1_SDA_LOC
 #define RTE_I2C1_SDA_PORT_ID 2
 
@@ -2412,6 +2450,12 @@
 #define RTE_I2C1_SDA_PAD  23
 #define RTE_I2C1_SDA_REN  1
 #elif (RTE_I2C1_SDA_PORT_ID == 5)
+#define RTE_I2C1_SDA_PORT HP
+#define RTE_I2C1_SDA_PIN  67
+#define RTE_I2C1_SDA_MUX  5
+#define RTE_I2C1_SDA_PAD  25
+#define RTE_I2C1_SDA_REN  3
+#elif (RTE_I2C1_SDA_PORT_ID == 6)
 #define RTE_I2C1_SDA_PORT HP
 #define RTE_I2C1_SDA_PIN  71
 #define RTE_I2C1_SDA_MUX  5
@@ -3033,7 +3077,7 @@
 //Pintool data
 #endif
 
-//SCT_IN_3  <0=>GPIO_28   <1=>GPIO_71
+//SCT_IN_3  <0=>GPIO_28  <1=>GPIO_67 <2=>GPIO_71
 #ifndef SCT_IN3_LOC
 #ifdef SLI_SI91X_MCU_CONFIG_RADIO_BOARD_BASE_VER
 #define RTE_SCT_IN_3_PORT_ID 0
@@ -3047,6 +3091,11 @@
 #define RTE_SCT_IN_3_MUX  9
 #define RTE_SCT_IN_3_PAD  0 //no pad
 #elif (RTE_SCT_IN_3_PORT_ID == 1)
+#define RTE_SCT_IN_3_PORT HP
+#define RTE_SCT_IN_3_PIN  67
+#define RTE_SCT_IN_3_MUX  7
+#define RTE_SCT_IN_3_PAD  25
+#elif (RTE_SCT_IN_3_PORT_ID == 2)
 #define RTE_SCT_IN_3_PORT HP
 #define RTE_SCT_IN_3_PIN  71
 #define RTE_SCT_IN_3_MUX  9
@@ -3265,7 +3314,7 @@
 //Pintool data
 #endif
 
-// SIO_2  <0=>GPIO_8 <1=>GPIO_27  <2=>GPIO_66
+// SIO_2  <0=>GPIO_8 <1=>GPIO_27  <2=>GPIO_66 <3=>GPIO_74
 #ifndef SIO_2_LOC
 #define RTE_SIO_2_PORT_ID 1
 
@@ -3284,6 +3333,11 @@
 #define RTE_SIO_2_PIN  66
 #define RTE_SIO_2_MUX  1
 #define RTE_SIO_2_PAD  24
+#elif (RTE_SIO_2_PORT_ID == 3)
+#define RTE_SIO_2_PORT HP
+#define RTE_SIO_2_PIN  74
+#define RTE_SIO_2_MUX  1
+#define RTE_SIO_2_PAD  32
 #else
 #error "Invalid  RTE_SIO_2_PIN Pin Configuration!"
 #endif
@@ -3306,7 +3360,7 @@
 //Pintool data
 #endif
 
-//SIO_3 <0=>GPIO_9 <1=>GPIO_28  <2=>GPIO_75
+//SIO_3 <0=>GPIO_9 <1=>GPIO_28  <2=>GPIO_67 <3=>GPIO_75
 #ifndef SIO_3_LOC
 #define RTE_SIO_3_PORT_ID 1
 
@@ -3321,6 +3375,11 @@
 #define RTE_SIO_3_MUX  1
 #define RTE_SIO_3_PAD  0 //no pad
 #elif (RTE_SIO_3_PORT_ID == 2)
+#define RTE_SIO_3_PORT HP
+#define RTE_SIO_3_PIN  67
+#define RTE_SIO_3_MUX  1
+#define RTE_SIO_3_PAD  25
+#elif (RTE_SIO_3_PORT_ID == 3)
 #define RTE_SIO_3_PORT HP
 #define RTE_SIO_3_PIN  75
 #define RTE_SIO_3_MUX  1
@@ -3537,7 +3596,7 @@
 //Pintool data
 #endif
 
-//PWM_2H  <0=>GPIO_9
+//PWM_2H  <0=>GPIO_9  <1=>GPIO_67 <2=>GPIO_69
 #ifndef PWM_CH1_1H_LOC
 #define RTE_PWM_2H_PORT_ID 0
 #if ((RTE_PWM_2H_PORT_ID == 2))
@@ -3549,6 +3608,11 @@
 #define RTE_PWM_2H_PIN  9
 #define RTE_PWM_2H_MUX  10
 #define RTE_PWM_2H_PAD  4
+#elif (RTE_PWM_2H_PORT_ID == 1)
+#define RTE_PWM_2H_PORT HP
+#define RTE_PWM_2H_PIN  67
+#define RTE_PWM_2H_MUX  8
+#define RTE_PWM_2H_PAD  25
 #else
 #error "Invalid  RTE_PWM_2H_PIN Pin Configuration!"
 #endif
@@ -3773,7 +3837,7 @@
 //Pintool data
 #endif
 
-// PWM_FAULTB <0=>GPIO_26
+// PWM_FAULTB <0=>GPIO_26 <1=>GPIO_69 <1=>GPIO_74
 #ifndef PWM_FAULTB_LOC
 #define RTE_PWM_FAULTB_PORT_ID 0
 
@@ -3782,6 +3846,11 @@
 #define RTE_PWM_FAULTB_PIN  26
 #define RTE_PWM_FAULTB_MUX  10
 #define RTE_PWM_FAULTB_PAD  0 //no pad
+#elif (RTE_PWM_FAULTB_PORT_ID == 2)
+#define RTE_PWM_FAULTB_PORT HP
+#define RTE_PWM_FAULTB_PIN  74
+#define RTE_PWM_FAULTB_MUX  8
+#define RTE_PWM_FAULTB_PAD  32
 #else
 #error "Invalid  RTE_PWM_FAULTB_PIN Pin Configuration!"
 #endif
@@ -3962,9 +4031,9 @@
 
 //<> QEI (Quadrature Encode Interface)
 
-//QEI_DIR <0=>GPIO_28 <1=>GPIO_49 <2=>GPIO_57 <3=>GPIO_71 <4=>GPIO_73 <5=>GPIO_11 <6=>GPIO_34
+//QEI_DIR <0=>GPIO_28 <1=>GPIO_49 <2=>GPIO_57 <3=>GPIO_67 <4=>GPIO_71 <5=>GPIO_73 <6=>GPIO_11 <7=>GPIO_34
 
-#define RTE_QEI_DIR_PORT_ID 3
+#define RTE_QEI_DIR_PORT_ID 4
 
 #if (RTE_QEI_DIR_PORT_ID == 0)
 #define RTE_QEI_DIR_PORT HP
@@ -3983,10 +4052,15 @@
 #define RTE_QEI_DIR_PAD  21
 #elif (RTE_QEI_DIR_PORT_ID == 3)
 #define RTE_QEI_DIR_PORT HP
+#define RTE_QEI_DIR_PIN  67
+#define RTE_QEI_DIR_MUX  3
+#define RTE_QEI_DIR_PAD  25
+#elif (RTE_QEI_DIR_PORT_ID == 4)
+#define RTE_QEI_DIR_PORT HP
 #define RTE_QEI_DIR_PIN  71
 #define RTE_QEI_DIR_MUX  3
 #define RTE_QEI_DIR_PAD  29
-#elif (RTE_QEI_DIR_PORT_ID == 4)
+#elif (RTE_QEI_DIR_PORT_ID == 5)
 #define RTE_QEI_DIR_PORT HP
 #define RTE_QEI_DIR_PIN  73
 #define RTE_QEI_DIR_MUX  3
@@ -4060,12 +4134,12 @@
 #error "Invalid  RTE_QEI_PHA_PIN Pin Configuration!"
 #endif
 
-//QEI_PHB <0=>GPIO_27 <1=>GPIO_48 <2=>GPIO_56 <3=>GPIO_66 <4=>GPIO_70
+//QEI_PHB <0=>GPIO_27 <1=>GPIO_48 <1=>GPIO_56 <1=>GPIO_66 <1=>GPIO_70 <1=>GPIO_74 <7=>GPIO_33
 
 #ifdef SLI_SI91X_MCU_CONFIG_RADIO_BOARD_BASE_VER
-#define RTE_QEI_PHB_PORT_ID 4
+#define RTE_QEI_PHB_PORT_ID 5
 #else
-#define RTE_QEI_PHB_PORT_ID 3
+#define RTE_QEI_PHB_PORT_ID 4
 #endif
 
 #if (RTE_QEI_PHB_PORT_ID == 0)
@@ -4093,6 +4167,11 @@
 #define RTE_QEI_PHB_PIN  70
 #define RTE_QEI_PHB_MUX  3
 #define RTE_QEI_PHB_PAD  28
+#elif (RTE_QEI_PHB_PORT_ID == 5)
+#define RTE_QEI_PHB_PORT HP
+#define RTE_QEI_PHB_PIN  74
+#define RTE_QEI_PHB_MUX  3
+#define RTE_QEI_PHB_PAD  32
 #else
 #error "Invalid  RTE_QEI_PHB_PIN Pin Configuration!"
 #endif
@@ -4376,9 +4455,18 @@
 #error "Invalid  RTE_ULP_GPIO_2_PIN Pin Configuration!"
 #endif
 
+#ifdef SLI_SI91X_MCU_CONFIG_RADIO_BOARD_BASE_VER
 #define RTE_ULP_GPIO_3_PORT_ID 1
+#else
+#define RTE_ULP_GPIO_3_PORT_ID 0
+#endif
 
-#if (RTE_ULP_GPIO_3_PORT_ID == 1)
+#if (RTE_ULP_GPIO_3_PORT_ID == 0)
+#define RTE_ULP_GPIO_3_PORT HP
+#define RTE_ULP_GPIO_3_PAD  25
+#define RTE_ULP_GPIO_3_PIN  67
+#define RTE_ULP_GPIO_3_MODE 0
+#elif (RTE_ULP_GPIO_3_PORT_ID == 1)
 #define RTE_ULP_GPIO_3_PORT ULP
 #define RTE_ULP_GPIO_3_PIN  3
 #define RTE_ULP_GPIO_3_MODE 0
@@ -4500,9 +4588,18 @@
 #error "Invalid  RTE_ULP_GPIO_9_PIN Pin Configuration!"
 #endif
 
+#ifdef SLI_SI91X_MCU_CONFIG_RADIO_BOARD_BASE_VER
+#define RTE_ULP_GPIO_10_PORT_ID 1
+#else
 #define RTE_ULP_GPIO_10_PORT_ID 0
+#endif
 
 #if (RTE_ULP_GPIO_10_PORT_ID == 0)
+#define RTE_ULP_GPIO_10_PORT ULP
+#define RTE_ULP_GPIO_10_PAD  32
+#define RTE_ULP_GPIO_10_PIN  74
+#define RTE_ULP_GPIO_10_MODE 0
+#elif (RTE_ULP_GPIO_10_PORT_ID == 1)
 #define RTE_ULP_GPIO_10_PORT ULP
 #define RTE_ULP_GPIO_10_PIN  10
 #define RTE_ULP_GPIO_10_MODE 0
@@ -4553,17 +4650,20 @@
 #define RTE_UULP_GPIO_5_PIN  5
 #define RTE_UULP_GPIO_5_MODE 0
 
-// ULP GPIO as enable pin for sensors
-#define SENSOR_ENABLE_GPIO_MAPPED_TO_ULP
-#define SENSOR_ENABLE_GPIO_PORT RTE_ULP_GPIO_2_PORT
-#define SENSOR_ENABLE_GPIO_PIN  RTE_ULP_GPIO_2_PIN
+// UULP GPIO as enable pin for sensors
+#define SENSOR_ENABLE_GPIO_MAPPED_TO_UULP
+#define SENSOR_ENABLE_GPIO_PIN RTE_UULP_GPIO_1_PIN
 
 // Memlcd GPIOs
-#define RTE_MEMLCD_CS_PIN  4  // Memlcd SPI CS pin
+#define RTE_MEMLCD_CS_PIN  10 // Memlcd SPI CS pin
 #define RTE_MEMLCD_CS_PORT HP // Memlcd SPI CS port
 
-#define RTE_MEMLCD_EXTCOMIN_PIN  5  // Memlcd external communication pin
+#define RTE_MEMLCD_EXTCOMIN_PIN  3  // Memlcd external communication pin
 #define RTE_MEMLCD_EXTCOMIN_PORT HP // Memlcd external communication port
 
 #define RTE_MEMLCD_ENABLE_DISPLAY_PIN  0  // Memlcd display enable pin
 #define RTE_MEMLCD_ENABLE_DISPLAY_PORT HP // Memlcd display enable port
+
+// GPIO as enable pin for Mic
+#define RTE_MIC_ENABLE_PORT RTE_UULP_GPIO_0_PORT
+#define RTE_MIC_ENABLE_PIN  RTE_UULP_GPIO_0_PIN

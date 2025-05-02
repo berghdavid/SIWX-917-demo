@@ -963,6 +963,9 @@ sl_status_t sli_si91x_mqtt_event_handler(sl_status_t status,
 
 void sli_mqtt_client_cleanup()
 {
+  if (mqtt_client == NULL) {
+    return;
+  }
   sli_si91x_remove_and_free_all_subscriptions(mqtt_client);
   memset(mqtt_client, 0, sizeof(sl_mqtt_client_t));
   mqtt_client = NULL;

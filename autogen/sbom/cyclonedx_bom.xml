@@ -10,7 +10,7 @@ referenced in this SBOM.)
 -->
 <bom xmlns="http://cyclonedx.org/schema/bom/1.6" version="1">
   <metadata>
-    <timestamp>2025-03-17T15:08:56.694418400Z</timestamp>
+    <timestamp>2025-03-24T14:14:18.440303700Z</timestamp>
     <authors>
       <author>
         <name>Silicon Laboratories, Inc.</name>
@@ -38,6 +38,13 @@ referenced in this SBOM.)
         </component>
         <component bom-ref="wiseconnect3_sdk:3.4.1:brd2708a" type="library">
           <name>BRD2708A</name>
+          <version>3.4.1</version>
+          <licenses>
+            <expression>Zlib</expression>
+          </licenses>
+        </component>
+        <component bom-ref="wiseconnect3_sdk:3.4.1:bsd_socket" type="library">
+          <name>BSD Socket</name>
           <version>3.4.1</version>
           <licenses>
             <expression>Zlib</expression>
@@ -86,6 +93,13 @@ referenced in this SBOM.)
           <version>3.4.1</version>
           <licenses>
             <expression>Zlib</expression>
+          </licenses>
+        </component>
+        <component bom-ref="wiseconnect3_sdk:3.4.1:sl_si91x_asynchronous_socket" type="library">
+          <name>Si91x Asynchronous Socket</name>
+          <version>3.4.1</version>
+          <licenses>
+            <expression>MSLA</expression>
           </licenses>
         </component>
         <component bom-ref="wiseconnect3_sdk:3.4.1:sl_si91x_internal_stack" type="library">
@@ -595,20 +609,6 @@ referenced in this SBOM.)
             <expression>Zlib</expression>
           </licenses>
         </component>
-        <component bom-ref="wiseconnect3_sdk:3.4.1:sl_si91x_asynchronous_socket" type="library">
-          <name>Si91x Asynchronous Socket</name>
-          <version>3.4.1</version>
-          <licenses>
-            <expression>MSLA</expression>
-          </licenses>
-        </component>
-        <component bom-ref="wiseconnect3_sdk:3.4.1:bsd_socket" type="library">
-          <name>BSD Socket</name>
-          <version>3.4.1</version>
-          <licenses>
-            <expression>Zlib</expression>
-          </licenses>
-        </component>
       </components>
     </component>
     <component bom-ref="simplicity_sdk:2024.12.1" type="library">
@@ -960,6 +960,16 @@ referenced in this SBOM.)
         </component>
         <component bom-ref="simplicity_sdk:2024.12.1:sl_common" type="library">
           <name>Common Functions</name>
+          <version>2024.12.1</version>
+	      <supplier>
+	        <name>Silicon Laboratories, Inc.</name>
+	      </supplier>
+          <licenses>
+            <expression>Zlib</expression>
+          </licenses>
+        </component>
+        <component bom-ref="simplicity_sdk:2024.12.1:ecode" type="library">
+          <name>EMDRV Common Headers</name>
           <version>2024.12.1</version>
 	      <supplier>
 	        <name>Silicon Laboratories, Inc.</name>

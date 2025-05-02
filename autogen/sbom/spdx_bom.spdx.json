@@ -5,7 +5,7 @@
   "name" : "Silicon-Laboratories",
   "documentNamespace" : "https://silabs.com",
   "creationInfo" : {
-    "created" : "2025-03-17T15:08:56.694418400Z",
+    "created" : "2025-03-24T14:14:18.440303700Z",
     "creators" : [ "Tool: Silicon Labs Configuration Tooling" ]
   },
   "comment" : "TERMS OF USE - SILICON LABORATORIES INC.\n(With respect to Silicon Labs software components, this Software Bill of Materials (SBOM) is based upon Silicon Labs'\nreview and analysis of the code version when released.  It is provided \"AS IS\" and does not modify, change or alter\nthe terms or conditions of your use of Silicon Labs' software and/or SDKs based upon license terms and/or agreements\nassociated with this software or SDKs when distributed to you, received by you, or installed by you.  Further, no\nwarranties or obligations are created by this SBOM.  It is your obligation to comply with the terms of licenses\nreferenced in this SBOM.)",
@@ -36,6 +36,14 @@
   }, {
     "SPDXID" : "SPDXRef-wiseconnect3_sdk-3.4.1-brd2708a",
     "name" : "BRD2708A",
+    "versionInfo" : "3.4.1",
+    "primaryPackagePurpose" : "LIBRARY",
+    "downloadLocation" : "NOASSERTION",
+    "supplier" : "Organization: NOASSERTION",
+    "licenseConcluded" : "Zlib"
+  }, {
+    "SPDXID" : "SPDXRef-wiseconnect3_sdk-3.4.1-bsd_socket",
+    "name" : "BSD Socket",
     "versionInfo" : "3.4.1",
     "primaryPackagePurpose" : "LIBRARY",
     "downloadLocation" : "NOASSERTION",
@@ -87,6 +95,14 @@
     "downloadLocation" : "NOASSERTION",
     "supplier" : "Organization: NOASSERTION",
     "licenseConcluded" : "Zlib"
+  }, {
+    "SPDXID" : "SPDXRef-wiseconnect3_sdk-3.4.1-sl_si91x_asynchronous_socket",
+    "name" : "Si91x Asynchronous Socket",
+    "versionInfo" : "3.4.1",
+    "primaryPackagePurpose" : "LIBRARY",
+    "downloadLocation" : "NOASSERTION",
+    "supplier" : "Organization: NOASSERTION",
+    "licenseConcluded" : "MSLA"
   }, {
     "SPDXID" : "SPDXRef-wiseconnect3_sdk-3.4.1-sl_si91x_internal_stack",
     "name" : "Internal Network Stack",
@@ -662,22 +678,6 @@
     "supplier" : "Organization: NOASSERTION",
     "licenseConcluded" : "Zlib"
   }, {
-    "SPDXID" : "SPDXRef-wiseconnect3_sdk-3.4.1-sl_si91x_asynchronous_socket",
-    "name" : "Si91x Asynchronous Socket",
-    "versionInfo" : "3.4.1",
-    "primaryPackagePurpose" : "LIBRARY",
-    "downloadLocation" : "NOASSERTION",
-    "supplier" : "Organization: NOASSERTION",
-    "licenseConcluded" : "MSLA"
-  }, {
-    "SPDXID" : "SPDXRef-wiseconnect3_sdk-3.4.1-bsd_socket",
-    "name" : "BSD Socket",
-    "versionInfo" : "3.4.1",
-    "primaryPackagePurpose" : "LIBRARY",
-    "downloadLocation" : "NOASSERTION",
-    "supplier" : "Organization: NOASSERTION",
-    "licenseConcluded" : "Zlib"
-  }, {
     "SPDXID" : "SPDXRef-simplicity_sdk-2024.12.1",
     "name" : "Simplicity SDK Suite",
     "versionInfo" : "2024.12.1",
@@ -960,6 +960,14 @@
     "downloadLocation" : "NOASSERTION",
     "supplier" : "Organization: Silicon Laboratories, Inc.",
     "licenseConcluded" : "Zlib"
+  }, {
+    "SPDXID" : "SPDXRef-simplicity_sdk-2024.12.1-ecode",
+    "name" : "EMDRV Common Headers",
+    "versionInfo" : "2024.12.1",
+    "primaryPackagePurpose" : "LIBRARY",
+    "downloadLocation" : "NOASSERTION",
+    "supplier" : "Organization: Silicon Laboratories, Inc.",
+    "licenseConcluded" : "Zlib"
   } ],
   "relationships" : [ {
     "spdxElementId" : "SPDXRef-DOCUMENT",
@@ -983,6 +991,10 @@
     "relationshipType" : "CONTAINS"
   }, {
     "spdxElementId" : "SPDXRef-wiseconnect3_sdk-3.4.1",
+    "relatedSpdxElement" : "SPDXRef-wiseconnect3_sdk-3.4.1-bsd_socket",
+    "relationshipType" : "CONTAINS"
+  }, {
+    "spdxElementId" : "SPDXRef-wiseconnect3_sdk-3.4.1",
     "relatedSpdxElement" : "SPDXRef-wiseconnect3_sdk-3.4.1-json_parser",
     "relationshipType" : "CONTAINS"
   }, {
@@ -1000,6 +1012,10 @@
   }, {
     "spdxElementId" : "SPDXRef-wiseconnect3_sdk-3.4.1",
     "relatedSpdxElement" : "SPDXRef-wiseconnect3_sdk-3.4.1-si91x_memory_default_config",
+    "relationshipType" : "CONTAINS"
+  }, {
+    "spdxElementId" : "SPDXRef-wiseconnect3_sdk-3.4.1",
+    "relatedSpdxElement" : "SPDXRef-wiseconnect3_sdk-3.4.1-sl_si91x_asynchronous_socket",
     "relationshipType" : "CONTAINS"
   }, {
     "spdxElementId" : "SPDXRef-wiseconnect3_sdk-3.4.1",
@@ -1286,14 +1302,6 @@
     "relatedSpdxElement" : "SPDXRef-wiseconnect3_sdk-3.4.1-rsilib_crc",
     "relationshipType" : "CONTAINS"
   }, {
-    "spdxElementId" : "SPDXRef-wiseconnect3_sdk-3.4.1",
-    "relatedSpdxElement" : "SPDXRef-wiseconnect3_sdk-3.4.1-sl_si91x_asynchronous_socket",
-    "relationshipType" : "CONTAINS"
-  }, {
-    "spdxElementId" : "SPDXRef-wiseconnect3_sdk-3.4.1",
-    "relatedSpdxElement" : "SPDXRef-wiseconnect3_sdk-3.4.1-bsd_socket",
-    "relationshipType" : "CONTAINS"
-  }, {
     "spdxElementId" : "SPDXRef-simplicity_sdk-2024.12.1",
     "relatedSpdxElement" : "SPDXRef-simplicity_sdk-2024.12.1-freertos",
     "relationshipType" : "CONTAINS"
@@ -1416,6 +1424,10 @@
   }, {
     "spdxElementId" : "SPDXRef-simplicity_sdk-2024.12.1",
     "relatedSpdxElement" : "SPDXRef-simplicity_sdk-2024.12.1-sl_common",
+    "relationshipType" : "CONTAINS"
+  }, {
+    "spdxElementId" : "SPDXRef-simplicity_sdk-2024.12.1",
+    "relatedSpdxElement" : "SPDXRef-simplicity_sdk-2024.12.1-ecode",
     "relationshipType" : "CONTAINS"
   } ]
 }
