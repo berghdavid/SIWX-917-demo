@@ -53,9 +53,7 @@
 //Application start API
 static void application_start(void *argument);
 void mqtt_client_event_handler(void *client, sl_mqtt_client_event_t event, void *event_data, void *context);
-void mqtt_client_error_event_handler(void *client, sl_mqtt_client_error_status_t *error);
 void mqtt_client_cleanup();
-sl_status_t mqtt_example();
 
 /******************************************************
  *               Variable Definitions
@@ -109,7 +107,7 @@ static const osThreadAttr_t thread_attributes = {
 #define IS_CLEAN_SESSION     1
 
 #define LAST_WILL_TOPIC       "SiLabs last will"
-#define LAST_WILL_MESSAGE     "SiLabs device has been disconnect from network"
+#define LAST_WILL_MESSAGE     "SiLabs device has disconnected from network"
 #define QOS_OF_LAST_WILL      1
 #define IS_LAST_WILL_RETAINED 1
 
@@ -350,7 +348,7 @@ static sl_status_t wlan_app_scan_callback_handler(sl_wifi_event_t event,
   return SL_STATUS_OK;
 }
 
-static void set_mac_address(sl_wifi_interface_t *wifi_interface)
+static void set_topic_using_mac(sl_wifi_interface_t *wifi_interface)
 {
   sl_mac_address_t mac;
   char *pos = &device_id[0];
@@ -363,17 +361,17 @@ static void set_mac_address(sl_wifi_interface_t *wifi_interface)
   }
   for (int i = 0; i < 6; i++) {
     if (i > 0) {
-        n = sprintf(pos, ":");
-        pos += n;
+      n = sprintf(pos, ":");
+      pos += n;
     }
     n = sprintf(pos, "%02X", mac.octet[i]);
     pos += n;
   }
 
-  if (mqtt_topic[0] == '\0') {
-    snprintf(mqtt_topic, sizeof(mqtt_topic), PUBLISH_TOPIC, SERVICE_TOKEN, device_id);
-    printf("MQTT publish topic: %s\r\n", mqtt_topic);
-  }
+  snprintf(mqtt_topic, sizeof(mqtt_topic), PUBLISH_TOPIC, SERVICE_TOKEN, device_id);
+  message_to_be_published.topic = (uint8_t *)mqtt_topic;
+  message_to_be_published.topic_length = strlen(mqtt_topic);
+  printf("Updated MQTT publish topic: %s\r\n", message_to_be_published.topic);
 }
 
 static void perform_wifi_scan(char *scan_result_buffer)
@@ -381,8 +379,8 @@ static void perform_wifi_scan(char *scan_result_buffer)
   sl_wifi_interface_t wifi_interface = SL_WIFI_AP_INTERFACE;
   scan_complete = 0;
   scan_result_buffer[0] = '\0';
-  if (device_id[0] == '\0') {
-    set_mac_address(&wifi_interface);
+  if (message_to_be_published.topic[0] == '\0') {
+    set_topic_using_mac(&wifi_interface);
   }
 
   sl_wifi_set_scan_callback(wlan_app_scan_callback_handler, (void *)scan_result_buffer);
@@ -399,19 +397,21 @@ static void perform_wifi_scan(char *scan_result_buffer)
   if (status != RSI_SUCCESS) {
     printf("WLAN Scan failed %lx. Please make sure the latest connectivity firmware is used.\r\n", status);
   }
-  printf("Scan: %s\r\n", scan_result_buffer);
+  printf("Scan JSON: %s\r\n", scan_result_buffer);
 }
 
-static void get_rss_scan(char *buf)
+void get_rss_scan(char *buf)
 {
   sl_net_interface_t net_interface            = SL_NET_WIFI_AP_INTERFACE;
   sl_net_profile_id_t profile                 = SL_NET_DEFAULT_WIFI_AP_PROFILE_ID;
   const sl_wifi_device_configuration_t config = ap_config;
 
-  if (init_up_net(&net_interface, &profile, &config) == 0) {
-    perform_wifi_scan(buf);
-    deinit_net(&net_interface);
+  memset(buf, 0, SCAN_RESULT_BUFFER_SIZE);
+  if (init_up_net(&net_interface, &profile, &config) != 0) {
+    return;
   }
+  perform_wifi_scan(buf);
+  deinit_net(&net_interface);
 }
 
 /******************************************************
@@ -421,15 +421,13 @@ static void get_rss_scan(char *buf)
 void mqtt_client_cleanup()
 {
   SL_CLEANUP_MALLOC(client_credentails);
-  client_credentails = NULL;
+  sl_status_t status = sl_net_down(SL_NET_WIFI_CLIENT_INTERFACE);
+  if (status != SL_STATUS_OK) {
+    printf("Network down failed: 0x%lx\r\n", status);
+    return;
+  }
   is_execution_completed = 1;
-}
-
-void mqtt_client_error_event_handler(void *client, sl_mqtt_client_error_status_t *error)
-{
-  UNUSED_PARAMETER(client);
-  printf("Terminating program, Error: %d\r\n", *error);
-  mqtt_client_cleanup();
+  printf("MQTT cleanup done\r\n");
 }
 
 void mqtt_client_event_handler(void *client, sl_mqtt_client_event_t event, void *event_data, void *context)
@@ -439,18 +437,17 @@ void mqtt_client_event_handler(void *client, sl_mqtt_client_event_t event, void 
       sl_status_t status = sl_mqtt_client_publish(client, &message_to_be_published, 0, &message_to_be_published);
       if (status != SL_STATUS_IN_PROGRESS) {
         printf("Failed to publish message: 0x%lx\r\n", status);
-        mqtt_client_cleanup();
-        return;
       }
+      sl_mqtt_client_disconnect(client, 0);
       break;
     }
 
     case SL_MQTT_CLIENT_MESSAGE_PUBLISHED_EVENT: {
       sl_mqtt_client_message_t *published_message = (sl_mqtt_client_message_t *)context;
-      printf("Published message successfully on topic: %.*s\r\n",
-             published_message->topic_length,
-             (char *)published_message->topic);
-      sl_mqtt_client_disconnect(client, 0);
+      printf("Successfully published MQTT message:\r\n    Topic: %.*s\r\n    Content: %.*s\r\n",
+        published_message->topic_length, (char *)published_message->topic,
+        (int)published_message->content_length, (char *)published_message->content
+      );
       break;
     }
 
@@ -461,7 +458,8 @@ void mqtt_client_event_handler(void *client, sl_mqtt_client_event_t event, void 
     }
 
     case SL_MQTT_CLIENT_ERROR_EVENT: {
-      mqtt_client_error_event_handler(client, (sl_mqtt_client_error_status_t *)event_data);
+      printf("Terminating program, Error: %d\r\n", *(sl_mqtt_client_error_status_t *)event_data);
+      mqtt_client_cleanup();
       break;
     }
 
@@ -470,30 +468,39 @@ void mqtt_client_event_handler(void *client, sl_mqtt_client_event_t event, void 
   }
 }
 
-sl_status_t mqtt_example()
+sl_status_t send_mqtt()
 {
-  sl_status_t status;
-  printf("Sending '%s'\r\n", message_to_be_published.content);
+  sl_status_t status = sl_net_init(SL_NET_WIFI_CLIENT_INTERFACE, &wifi_mqtt_client_configuration, NULL, NULL);
+  if (status != SL_STATUS_OK && status != SL_STATUS_ALREADY_INITIALIZED) {
+    printf("Failed to start Wi-Fi client interface: 0x%lx\r\n", status);
+    return status;
+  }
+  printf("Wi-Fi client interface up\r\n");
 
+  status = sl_net_up(SL_NET_WIFI_CLIENT_INTERFACE, SL_NET_DEFAULT_WIFI_CLIENT_PROFILE_ID);
+  if (status != SL_STATUS_OK) {
+    printf("Failed to bring Wi-Fi client interface up: 0x%lx\r\n", status);
+    return status;
+  }
+  printf("Wi-Fi client connected\r\n");
+
+  is_execution_completed = 0;
   if (ENCRYPT_CONNECTION) {
     // Load SSL CA certificate
-    status = sl_net_set_credential(SL_NET_TLS_SERVER_CREDENTIAL_ID(CERTIFICATE_INDEX),
-                                   SL_NET_SIGNING_CERTIFICATE,
-                                   cacert,
-                                   sizeof(cacert) - 1);
+    status = sl_net_set_credential(
+      SL_NET_TLS_SERVER_CREDENTIAL_ID(CERTIFICATE_INDEX), SL_NET_SIGNING_CERTIFICATE,
+      cacert, sizeof(cacert) - 1
+    );
     if (status != SL_STATUS_OK) {
-      printf("Loading TLS CA certificate in to FLASH Failed, Error Code : 0x%lX\r\n", status);
+      printf("\r\nLoading TLS CA certificate in to FLASH Failed, Error Code : 0x%lX\r\n", status);
       return status;
     }
-    printf("Load TLS CA certificate at index %d Success\r\n", 0);
+    printf("\r\nLoad TLS CA certificate at index %d Success\r\n", 0);
   }
 
   if (SEND_CREDENTIALS) {
-    uint16_t username_length, password_length;
-
-    username_length = strlen(USERNAME);
-    password_length = strlen(PASSWORD);
-
+    uint16_t username_length = strlen(USERNAME);
+    uint16_t password_length = strlen(PASSWORD);
     uint32_t malloc_size = sizeof(sl_mqtt_client_credentials_t) + username_length + password_length;
 
     client_credentails = malloc(malloc_size);
@@ -517,20 +524,19 @@ sl_status_t mqtt_example()
       printf("Failed to set credentials: 0x%lx\r\n ", status);
       return status;
     }
-    printf("Set credentials Success\r\n");
 
+    printf("Set credentials Success\r\n");
     free(client_credentails);
     mqtt_client_configuration.credential_id = SL_NET_MQTT_CLIENT_CREDENTIAL_ID(0);
   }
 
   status = sl_mqtt_client_init(&client, mqtt_client_event_handler);
   if (status != SL_STATUS_OK) {
-    printf("Failed to init mqtt client: 0x%lx\r\n", status);
-
+    printf("Failed to init MQTT client: 0x%lx\r\n", status);
     mqtt_client_cleanup();
     return status;
   }
-  printf("Init mqtt client Success\r\n");
+  printf("MQTT client successfully initialized\r\n");
 
 #ifdef SLI_SI91X_ENABLE_IPV6
   unsigned char hex_addr[SL_IPV6_ADDRESS_LENGTH] = { 0 };
@@ -547,8 +553,7 @@ sl_status_t mqtt_example()
 #else
   status = sl_net_inet_addr(MQTT_BROKER_IP, &mqtt_broker_configuration.ip.ip.v4.value);
   if (status != SL_STATUS_OK) {
-    printf("Failed to convert IP address\r\n");
-
+    printf("Failed to convert IP address \r\n");
     mqtt_client_cleanup();
     return status;
   }
@@ -562,7 +567,7 @@ sl_status_t mqtt_example()
     mqtt_client_cleanup();
     return status;
   }
-  printf("MQTT connection in progress\r\n");
+
   while (!is_execution_completed) {
     osThreadYield();
   }
@@ -570,26 +575,26 @@ sl_status_t mqtt_example()
   return SL_STATUS_OK;
 }
 
-void send_mqtt_msg(const char *msg)
+sl_status_t mqtt_process(char* msg)
 {
-  sl_net_interface_t net_interface            = SL_NET_WIFI_CLIENT_INTERFACE;
-  sl_net_profile_id_t profile                 = SL_NET_DEFAULT_WIFI_CLIENT_PROFILE_ID;
-  const sl_wifi_device_configuration_t config = wifi_mqtt_client_configuration;
+  if (msg[0] == '\0') {
+    printf("Missing MQTT message\r\n");
+    return SL_STATUS_FAIL;
+  }
 
-  is_execution_completed = 0;
+  if (mqtt_topic[0] == '\0') {
+    printf("Missing MQTT topic\r\n");
+    return SL_STATUS_FAIL;
+  }
+
   message_to_be_published.content = (uint8_t *)msg;
   message_to_be_published.content_length = strlen(msg);
-  message_to_be_published.topic = (uint8_t *)mqtt_topic;
-  message_to_be_published.topic_length = strlen(mqtt_topic);
 
-  init_up_net(&net_interface, &profile, &config);
-  mqtt_example();
-  deinit_net(&net_interface);
+  sl_status_t status = send_mqtt();
 
   message_to_be_published.content = NULL;
   message_to_be_published.content_length = 0;
-  message_to_be_published.topic = NULL;
-  message_to_be_published.topic_length = 0;
+  return status;
 }
 
 /******************************************************
@@ -602,12 +607,10 @@ static void application_start(void *argument)
   char scan_buf[SCAN_RESULT_BUFFER_SIZE];
 
   printf("\r\nCombain demo started.\r\n");
-
-  while (1) {
+  for (int i = 0; i < 5; i++) {
     get_rss_scan(scan_buf);
-    send_mqtt_msg(scan_buf);
+    mqtt_process(scan_buf);
     osDelay(SCAN_INTERVAL_MS);
-    memset(scan_buf, 0, sizeof(scan_buf));
   }
 
   printf("Combain demo done.\r\n");
