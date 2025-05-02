@@ -80,11 +80,17 @@ static const osThreadAttr_t thread_attributes = {
 
 
 /******************************************************
+ *                 Combain Demo Definitions
+ ******************************************************/
+#define SCAN_RESULT_BUFFER_SIZE 1200
+#define SCAN_INTERVAL_MS 1000
+#define SCAN_ITERATIONS 5 // Scans to perform, set as -1 to loop indefinitely
+
+
+/******************************************************
  *                 MQTT Definitions
  ******************************************************/
-#define SCAN_RESULT_BUFFER_SIZE (1200)
-#define SCAN_INTERVAL_MS (1000)
-#define SCAN_TIMEOUT_MS 10000
+#define SCAN_TIMEOUT_MS 10000 // Timeout MQTT connection after this many milliseconds
 
 #ifdef SLI_SI91X_ENABLE_IPV6
 #define MQTT_BROKER_IP "2401:4901:1290:10de::1000"
@@ -126,7 +132,7 @@ unsigned int req_nbr = 0;
 char device_id[18];
 char mqtt_topic[200];
 sl_mqtt_client_t client = { 0 };
-sl_mqtt_client_credentials_t *client_credentails = NULL;
+sl_mqtt_client_credentials_t *client_credentials = NULL;
 uint8_t is_execution_completed = 0;
 
 sl_mqtt_client_configuration_t mqtt_client_configuration = { .is_clean_session = IS_CLEAN_SESSION,
@@ -250,6 +256,7 @@ static int init_up_net(sl_net_interface_t *net_interface,
 {
   sl_status_t status = sl_net_init(*net_interface, (const void *)config, NULL, NULL);
   if (status == SL_STATUS_ALREADY_INITIALIZED) {
+    sl_net_deinit(SL_NET_WIFI_CLIENT_INTERFACE);
     printf("Reusing previous Wi-Fi interface. Wi-Fi interface up\r\n");
     return 0;
   } else if (status != SL_STATUS_OK) {
@@ -276,8 +283,6 @@ static int deinit_net(sl_net_interface_t *net_interface)
     return -1;
   }
 
-  // FIXME: AP network interface stuck on deinitialization.
-  printf("Attempting network deinit...\r\n");
   status = sl_net_deinit(*net_interface);
   if (status != SL_STATUS_OK) {
     printf("Network deinit failed: 0x%lx\r\n", status);
@@ -418,16 +423,29 @@ void get_rss_scan(char *buf)
  *                    MQTT Functions
  ******************************************************/
 
-void mqtt_client_cleanup()
+sl_status_t mqtt_deinit()
 {
-  SL_CLEANUP_MALLOC(client_credentails);
+  sl_mqtt_client_deinit(&client);
   sl_status_t status = sl_net_down(SL_NET_WIFI_CLIENT_INTERFACE);
   if (status != SL_STATUS_OK) {
     printf("Network down failed: 0x%lx\r\n", status);
-    return;
+    return status;
   }
-  is_execution_completed = 1;
+  status = sl_net_deinit(SL_NET_WIFI_CLIENT_INTERFACE);
+  if (status != SL_STATUS_OK) {
+    printf("Network deinit failed: 0x%lx\r\n", status);
+    return status;
+  }
+  printf("MQTT deinit done\r\n");
+  return SL_STATUS_OK;
+}
+
+void mqtt_client_cleanup()
+{
+  SL_CLEANUP_MALLOC(client_credentials);
+  client_credentials = NULL;
   printf("MQTT cleanup done\r\n");
+  is_execution_completed = 1;
 }
 
 void mqtt_client_event_handler(void *client, sl_mqtt_client_event_t event, void *event_data, void *context)
@@ -470,6 +488,7 @@ void mqtt_client_event_handler(void *client, sl_mqtt_client_event_t event, void 
 
 sl_status_t send_mqtt()
 {
+  is_execution_completed = 0;
   sl_status_t status = sl_net_init(SL_NET_WIFI_CLIENT_INTERFACE, &wifi_mqtt_client_configuration, NULL, NULL);
   if (status != SL_STATUS_OK && status != SL_STATUS_ALREADY_INITIALIZED) {
     printf("Failed to start Wi-Fi client interface: 0x%lx\r\n", status);
@@ -484,7 +503,6 @@ sl_status_t send_mqtt()
   }
   printf("Wi-Fi client connected\r\n");
 
-  is_execution_completed = 0;
   if (ENCRYPT_CONNECTION) {
     // Load SSL CA certificate
     status = sl_net_set_credential(
@@ -492,10 +510,10 @@ sl_status_t send_mqtt()
       cacert, sizeof(cacert) - 1
     );
     if (status != SL_STATUS_OK) {
-      printf("\r\nLoading TLS CA certificate in to FLASH Failed, Error Code : 0x%lX\r\n", status);
+      printf("Loading TLS CA certificate in to FLASH Failed, Error Code : 0x%lX\r\n", status);
       return status;
     }
-    printf("\r\nLoad TLS CA certificate at index %d Success\r\n", 0);
+    printf("Load TLS CA certificate at index %d Success\r\n", 0);
   }
 
   if (SEND_CREDENTIALS) {
@@ -503,20 +521,20 @@ sl_status_t send_mqtt()
     uint16_t password_length = strlen(PASSWORD);
     uint32_t malloc_size = sizeof(sl_mqtt_client_credentials_t) + username_length + password_length;
 
-    client_credentails = malloc(malloc_size);
-    if (client_credentails == NULL) {
+    client_credentials = malloc(malloc_size);
+    if (client_credentials == NULL) {
       return SL_STATUS_ALLOCATION_FAILED;
     }
-    memset(client_credentails, 0, malloc_size);
-    client_credentails->username_length = username_length;
-    client_credentails->password_length = password_length;
+    memset(client_credentials, 0, malloc_size);
+    client_credentials->username_length = username_length;
+    client_credentials->password_length = password_length;
 
-    memcpy(&client_credentails->data[0], USERNAME, username_length);
-    memcpy(&client_credentails->data[username_length], PASSWORD, password_length);
+    memcpy(&client_credentials->data[0], USERNAME, username_length);
+    memcpy(&client_credentials->data[username_length], PASSWORD, password_length);
 
     status = sl_net_set_credential(SL_NET_MQTT_CLIENT_CREDENTIAL_ID(0),
                                    SL_NET_MQTT_CLIENT_CREDENTIAL,
-                                   client_credentails,
+                                   client_credentials,
                                    malloc_size);
 
     if (status != SL_STATUS_OK) {
@@ -524,9 +542,8 @@ sl_status_t send_mqtt()
       printf("Failed to set credentials: 0x%lx\r\n ", status);
       return status;
     }
-
     printf("Set credentials Success\r\n");
-    free(client_credentails);
+    free(client_credentials);
     mqtt_client_configuration.credential_id = SL_NET_MQTT_CLIENT_CREDENTIAL_ID(0);
   }
 
@@ -554,6 +571,7 @@ sl_status_t send_mqtt()
   status = sl_net_inet_addr(MQTT_BROKER_IP, &mqtt_broker_configuration.ip.ip.v4.value);
   if (status != SL_STATUS_OK) {
     printf("Failed to convert IP address \r\n");
+
     mqtt_client_cleanup();
     return status;
   }
@@ -571,6 +589,7 @@ sl_status_t send_mqtt()
   while (!is_execution_completed) {
     osThreadYield();
   }
+  mqtt_deinit();
 
   return SL_STATUS_OK;
 }
@@ -582,7 +601,7 @@ sl_status_t mqtt_process(char* msg)
     return SL_STATUS_FAIL;
   }
 
-  if (mqtt_topic[0] == '\0') {
+  if (message_to_be_published.topic[0] == '\0') {
     printf("Missing MQTT topic\r\n");
     return SL_STATUS_FAIL;
   }
@@ -607,7 +626,7 @@ static void application_start(void *argument)
   char scan_buf[SCAN_RESULT_BUFFER_SIZE];
 
   printf("\r\nCombain demo started.\r\n");
-  for (int i = 0; i < 5; i++) {
+  for (int i = 0; i < SCAN_ITERATIONS || SCAN_ITERATIONS < 0; i++) {
     get_rss_scan(scan_buf);
     mqtt_process(scan_buf);
     osDelay(SCAN_INTERVAL_MS);
