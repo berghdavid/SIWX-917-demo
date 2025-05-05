@@ -24,7 +24,12 @@ Define the following variables in config/sl_net_default_values.h to allow a WiFi
 ```
 
 ### app.c
-Set the following variables to allow an MQTT connection:
+Set the following variables to configure scanning behaviour:
+- SCAN_RESULT_BUFFER_SIZE: Maximum MQTT message size (bytes)
+- SCAN_INTERVAL_MS: Milliseconds to wait between each scan
+- SCAN_ITERATIONS: Number of scans to perform, set as -1 to loop indefinitely
+
+The following variables are required to allow an MQTT connection:
 - MQTT_BROKER_IP: Host running MQTT service.
 - MQTT_BROKER_PORT: Port of MQTT service.
 - SERVICE_TOKEN: Inserted into MQTT topic like `tlc/v2/raw-data/service/<SERVICE_TOKEN>/device/<MAC_ADDRESS>`.
