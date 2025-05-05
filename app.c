@@ -82,8 +82,8 @@ static const osThreadAttr_t thread_attributes = {
 /******************************************************
  *                 Combain Demo Definitions
  ******************************************************/
-#define SCAN_RESULT_BUFFER_SIZE 1200
-#define SCAN_INTERVAL_MS 1000
+#define SCAN_RESULT_BUFFER_SIZE 1200 // Maximum MQTT message size (bytes)
+#define SCAN_INTERVAL_MS 1000 // Milliseconds to wait between each scan
 #define SCAN_ITERATIONS 5 // Scans to perform, set as -1 to loop indefinitely
 
 
@@ -256,40 +256,38 @@ static int init_up_net(sl_net_interface_t *net_interface,
 {
   sl_status_t status = sl_net_init(*net_interface, (const void *)config, NULL, NULL);
   if (status == SL_STATUS_ALREADY_INITIALIZED) {
-    sl_net_deinit(SL_NET_WIFI_CLIENT_INTERFACE);
     printf("Reusing previous Wi-Fi interface. Wi-Fi interface up\r\n");
-    return 0;
+    return SL_STATUS_OK;
   } else if (status != SL_STATUS_OK) {
     printf("Failed to init Wi-Fi interface: 0x%lx\r\n", status);
-    return -1;
+    return status;
   }
   printf("Wi-Fi interface initialized\r\n");
 
   status = sl_net_up(*net_interface, *profile);
   if (status != SL_STATUS_OK) {
     printf("Failed to bring Wi-Fi interface up: 0x%lx\r\n", status);
-    return -1;
+    return status;
   }
   printf("Wi-Fi interface up\r\n");
-  return 0;
+  return SL_STATUS_OK;
 }
 
 static int deinit_net(sl_net_interface_t *net_interface)
 {
-  sl_status_t status;
-  status = sl_net_down(*net_interface);
+  sl_status_t status = sl_net_down(*net_interface);
   if (status != SL_STATUS_OK) {
     printf("Network down failed: 0x%lx\r\n", status);
-    return -1;
+    return status;
   }
 
   status = sl_net_deinit(*net_interface);
   if (status != SL_STATUS_OK) {
     printf("Network deinit failed: 0x%lx\r\n", status);
-    return -1;
+    return status;
   }
   printf("Network deinitialized\r\n");
-  return 0;
+  return SL_STATUS_OK;
 }
 
 /******************************************************
@@ -401,8 +399,9 @@ static void perform_wifi_scan(char *scan_result_buffer)
 
   if (status != RSI_SUCCESS) {
     printf("WLAN Scan failed %lx. Please make sure the latest connectivity firmware is used.\r\n", status);
+    return;
   }
-  printf("Scan JSON: %s\r\n", scan_result_buffer);
+  printf("WLAN scan successful.\r\n");
 }
 
 void get_rss_scan(char *buf)
@@ -422,23 +421,6 @@ void get_rss_scan(char *buf)
 /******************************************************
  *                    MQTT Functions
  ******************************************************/
-
-sl_status_t mqtt_deinit()
-{
-  sl_mqtt_client_deinit(&client);
-  sl_status_t status = sl_net_down(SL_NET_WIFI_CLIENT_INTERFACE);
-  if (status != SL_STATUS_OK) {
-    printf("Network down failed: 0x%lx\r\n", status);
-    return status;
-  }
-  status = sl_net_deinit(SL_NET_WIFI_CLIENT_INTERFACE);
-  if (status != SL_STATUS_OK) {
-    printf("Network deinit failed: 0x%lx\r\n", status);
-    return status;
-  }
-  printf("MQTT deinit done\r\n");
-  return SL_STATUS_OK;
-}
 
 void mqtt_client_cleanup()
 {
@@ -462,8 +444,7 @@ void mqtt_client_event_handler(void *client, sl_mqtt_client_event_t event, void 
 
     case SL_MQTT_CLIENT_MESSAGE_PUBLISHED_EVENT: {
       sl_mqtt_client_message_t *published_message = (sl_mqtt_client_message_t *)context;
-      printf("Successfully published MQTT message:\r\n    Topic: %.*s\r\n    Content: %.*s\r\n",
-        published_message->topic_length, (char *)published_message->topic,
+      printf("Successfully published MQTT message: %.*s\r\n",
         (int)published_message->content_length, (char *)published_message->content
       );
       break;
@@ -489,19 +470,7 @@ void mqtt_client_event_handler(void *client, sl_mqtt_client_event_t event, void 
 sl_status_t send_mqtt()
 {
   is_execution_completed = 0;
-  sl_status_t status = sl_net_init(SL_NET_WIFI_CLIENT_INTERFACE, &wifi_mqtt_client_configuration, NULL, NULL);
-  if (status != SL_STATUS_OK && status != SL_STATUS_ALREADY_INITIALIZED) {
-    printf("Failed to start Wi-Fi client interface: 0x%lx\r\n", status);
-    return status;
-  }
-  printf("Wi-Fi client interface up\r\n");
-
-  status = sl_net_up(SL_NET_WIFI_CLIENT_INTERFACE, SL_NET_DEFAULT_WIFI_CLIENT_PROFILE_ID);
-  if (status != SL_STATUS_OK) {
-    printf("Failed to bring Wi-Fi client interface up: 0x%lx\r\n", status);
-    return status;
-  }
-  printf("Wi-Fi client connected\r\n");
+  sl_status_t status;
 
   if (ENCRYPT_CONNECTION) {
     // Load SSL CA certificate
@@ -589,13 +558,17 @@ sl_status_t send_mqtt()
   while (!is_execution_completed) {
     osThreadYield();
   }
-  mqtt_deinit();
+  sl_mqtt_client_deinit(&client);
 
   return SL_STATUS_OK;
 }
 
 sl_status_t mqtt_process(char* msg)
 {
+  sl_net_interface_t net_interface            = SL_NET_WIFI_CLIENT_INTERFACE;
+  sl_net_profile_id_t profile                 = SL_NET_DEFAULT_WIFI_CLIENT_PROFILE_ID;
+  const sl_wifi_device_configuration_t config = wifi_mqtt_client_configuration;
+
   if (msg[0] == '\0') {
     printf("Missing MQTT message\r\n");
     return SL_STATUS_FAIL;
@@ -609,7 +582,12 @@ sl_status_t mqtt_process(char* msg)
   message_to_be_published.content = (uint8_t *)msg;
   message_to_be_published.content_length = strlen(msg);
 
-  sl_status_t status = send_mqtt();
+  sl_status_t status = init_up_net(&net_interface, &profile, &config);
+  if (status != SL_STATUS_OK) {
+    return status;
+  }
+  status = send_mqtt();
+  deinit_net(&net_interface);
 
   message_to_be_published.content = NULL;
   message_to_be_published.content_length = 0;
